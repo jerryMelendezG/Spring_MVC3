@@ -6,10 +6,20 @@ public class Usuario {
     private String email;
     private String telefono;
     private String password;
+    private long id;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public Usuario(){}
 
-    public Usuario(String nombre, String apellido, String email, String telefono,String password){
+    public Usuario(long id, String nombre, String apellido, String email, String telefono,String password){
+        this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
