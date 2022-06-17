@@ -1,18 +1,22 @@
 package com.example.Spring_MVC3.controladores;
 
+import com.example.Spring_MVC3.dao.UsuarioDao;
+import com.example.Spring_MVC3.dao.UsuarioDaoImp;
 import com.example.Spring_MVC3.models.Usuario;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
+
 import java.util.List;
 
 @RestController
 public class UsuarioController {
-
-    @RequestMapping(value = "usuario/{id}")
+    @RequestMapping(value = "api/usuario/{id}", method = RequestMethod.GET)
     public Usuario getUsuario(@PathVariable long id){
         Usuario usuario = new Usuario();
         usuario.setId(id);
@@ -23,36 +27,43 @@ public class UsuarioController {
         return usuario;
     }
 
-    @RequestMapping(value = "usuarios")
+    @RequestMapping(value = "api/usuarios")
     public List<Usuario> getUsuarios(){
-        List<Usuario> usuarios = new ArrayList<>();
 
-        Usuario usuario = new Usuario();
-        usuario.setNombre("Jerry");
-        usuario.setApellido("Meléndez");
-        usuario.setEmail("mjerrymoises@gmail.com");
-        usuario.setTelefono("84172400");
+        try {
+            List<Usuario> usuarios = new ArrayList<>();
 
-        Usuario usuario2 = new Usuario();
-        usuario2.setNombre("Moisés");
-        usuario2.setApellido("García");
-        usuario2.setEmail("moisesgarcia@gmail.com");
-        usuario2.setTelefono("82384921");
+            String url = "jdbc:oracle:thin:@localhost:1521:XE";
+            Connection cn = DriverManager.getConnection(url, "registro","12345");
+            Statement s = cn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT * FROM USUARIOS order by id asc");
 
-        Usuario usuario3 = new Usuario();
-        usuario3.setNombre("Ana");
-        usuario3.setApellido("Rivera");
-        usuario3.setEmail("riveraana@gmail.com");
-        usuario3.setTelefono("83445812");
+            ResultSetMetaData rsMd = rs.getMetaData();
+            int cantidadColumnas = rsMd.getColumnCount();
+            Object[] fila = new Object[cantidadColumnas];
 
-        usuarios.add(usuario);
-        usuarios.add(usuario2);
-        usuarios.add(usuario3);
-
-        return usuarios;
+            while (rs.next()) {
+                for (int i = 0; i < cantidadColumnas; i++) {
+                    fila[i]=rs.getObject(i+1);
+                }
+                Usuario usuario = new Usuario();
+                usuario.setId(Integer.parseInt(fila[0].toString()));
+                usuario.setNombre(fila[1].toString());
+                usuario.setApellido(fila[2].toString());
+                usuario.setTelefono(fila[3].toString());
+                usuario.setEmail(fila[4].toString());
+//                usuario.setpa(Integer.parseInt(fila[0].toString()));
+                usuarios.add(usuario);
+            }
+            return usuarios;
+        }
+        catch (Exception e){
+            System.out.println("Error: " + e.toString());
+            return null;
+        }
     }
 
-    @RequestMapping(value = "editar-usuario")
+    @RequestMapping(value = "api/editar-usuario")
     public Usuario editar(){
         Usuario usuario = new Usuario();
         usuario.setNombre("Jerry");
@@ -62,7 +73,7 @@ public class UsuarioController {
         return usuario;
     }
 
-    @RequestMapping(value = "eliminar-usuario")
+    @RequestMapping(value = "api/eliminar-usuario", method = RequestMethod.DELETE)
     public Usuario eliminar(){
         Usuario usuario = new Usuario();
         usuario.setNombre("Jerry");
@@ -72,7 +83,7 @@ public class UsuarioController {
         return usuario;
     }
 
-    @RequestMapping(value = "buscar-usuario")
+    @RequestMapping(value = "api/buscar-usuario")
     public Usuario buscar(){
         Usuario usuario = new Usuario();
         usuario.setNombre("Jerry");
